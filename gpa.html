@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPA Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-purple: #bc13fe;
+            --dark-bg: #0a0b10;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #e2e8f0;
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 200px;
+            background: radial-gradient(circle at top right, #1a1b2e, #0a0b10);
+        }
+
+        h1, h2, .neon-text {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .neon-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .neon-card:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+        }
+
+        /* Input Field Styling Fixes */
+        .form-control, .form-select {
+            background: rgba(0, 0, 0, 0.4) !important; /* Darker background for contrast */
+            border: 1px solid var(--glass-border);
+            color: #ffffff !important; /* Pure white text for readability */
+            border-radius: 8px;
+        }
+
+        /* Placeholder / Hint Text Fix */
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+            opacity: 1;
+        }
+
+        /* Disabled Input Fix (The 'Max' marks) */
+        .form-control:disabled {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: var(--neon-cyan) !important;
+            border-color: rgba(0, 243, 255, 0.2);
+            opacity: 0.8;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(0, 0, 0, 0.6) !important;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+            outline: none;
+        }
+
+        .mode-container {
+            background: #161b22;
+            border-radius: 50px;
+            padding: 5px;
+            border: 1px solid var(--neon-purple);
+            display: inline-flex;
+        }
+
+        .mode-toggle-btn {
+            border: none;
+            background: transparent;
+            color: #888;
+            padding: 8px 25px;
+            border-radius: 50px;
+            transition: 0.4s;
+            font-weight: bold;
+        }
+
+        .mode-toggle-btn.active {
+            background: var(--neon-purple);
+            color: white;
+            box-shadow: 0 0 15px var(--neon-purple);
+        }
+
+        .neon-dashboard {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            background: rgba(10, 11, 16, 0.9);
+            border: 2px solid var(--neon-purple);
+            border-radius: 25px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 -10px 30px rgba(188, 19, 254, 0.2);
+            z-index: 1000;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan);
+            line-height: 1;
+        }
+
+        .btn-neon-add {
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            border-radius: 12px;
+            padding: 12px;
+            width: 100%;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-neon-add:hover:not(:disabled) {
+            background: var(--neon-cyan);
+            color: black;
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+
+        .btn-neon-add:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: #444;
+        }
+
+        .badge-count {
+            font-size: 0.7rem;
+            color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-4" style="max-width: 600px;">
+    <header class="text-center mb-5">
+        <h1 class="mb-4 neon-text" style="color: var(--neon-purple); text-shadow: 0 0 10px var(--neon-purple);">Cyber-GPA/CGPA</h1>
+        <div class="mode-container">
+            <button class="mode-toggle-btn active" id="gpaBtn" onclick="setMode('GPA')">GPA</button>
+            <button class="mode-toggle-btn" id="cgpaBtn" onclick="setMode('CGPA')">CGPA</button>
+        </div>
+    </header>
+
+    <div id="warningBox" class="p-3 mb-4 rounded-3 text-center d-none" style="background: rgba(188, 19, 254, 0.1); border: 1px solid var(--neon-purple); font-size: 0.9rem;">
+        ⚡ SYSTEM: BSSE 2022-26 BATCH PROTOCOL ACTIVE
+    </div>
+
+    <div id="entryList"></div>
+
+    <div class="mt-4 row g-2">
+        <div class="col-8">
+            <button class="btn-neon-add" id="addBtn" onclick="addSubject()">+ INITIALIZE SUBJECT</button>
+        </div>
+        <div class="col-4">
+            <button class="btn btn-outline-secondary w-100 h-100" style="border-radius: 12px;" onclick="resetApp()">RESET</button>
+        </div>
+    </div>
+</div>
+
+<div class="neon-dashboard">
+    <div>
+        <div class="small text-uppercase opacity-50 mb-1" id="labelDisplay">Current GPA</div>
+        <div class="score-display" id="finalValue">0.00</div>
+    </div>
+    <div class="text-end">
+        <div class="badge-count mb-2" id="countDisplay">1 / 6 SUBJECTS</div>
+        <div id="statusPulse" style="width: 15px; height: 15px; background: var(--neon-cyan); border-radius: 50%; display: inline-block; box-shadow: 0 0 10px var(--neon-cyan);"></div>
+    </div>
+</div>
+
+<script>
+    let mode = 'GPA';
+    let subjects = [{ id: Date.now(), credits: 3, total: 150, obtained: 0 }];
+    const semesters = [
+        { sem: 1, credits: 15.0, gpa: 0 }, { sem: 2, credits: 18.0, gpa: 0 },
+        { sem: 3, credits: 19.0, gpa: 0 }, { sem: 4, credits: 16.0, gpa: 0 },
+        { sem: 5, credits: 16.0, gpa: 0 }, { sem: 6, credits: 19.0, gpa: 0 }
+    ];
+
+    function setMode(newMode) {
+        mode = newMode;
+        document.getElementById('gpaBtn').classList.toggle('active', mode === 'GPA');
+        document.getElementById('cgpaBtn').classList.toggle('active', mode === 'CGPA');
+        document.getElementById('warningBox').classList.toggle('d-none', mode === 'GPA');
+        document.getElementById('addBtn').style.display = (mode === 'GPA') ? 'block' : 'none';
+        document.getElementById('labelDisplay').innerText = mode === 'GPA' ? 'Current GPA' : 'Overall CGPA';
+        render();
+    }
+
+    function calculateGPAValue(perc) {
+        const p = [80, 78.5, 77, 75.5, 74, 72.5, 71, 69.5, 68, 66.5, 65, 63.5, 62, 60.5, 59, 57.5, 56, 54.5, 53, 51.5, 50, 0];
+        const v = [4.0, 3.9, 3.8, 3.7, 3.6, 3.5, 3.4, 3.3, 3.2, 3.1, 3.0, 2.9, 2.8, 2.7, 2.6, 2.5, 2.4, 2.3, 2.2, 2.1, 2.0, 0.0];
+        for (let i = 0; i < p.length; i++) if (perc >= p[i]) return v[i];
+        return 0;
+    }
+
+    function render() {
+        const container = document.getElementById('entryList');
+        container.innerHTML = '';
+        
+        if (mode === 'GPA') {
+            document.getElementById('countDisplay').innerText = `${subjects.length} / 6 SUBJECTS`;
+            document.getElementById('addBtn').disabled = subjects.length >= 6;
+            
+            subjects.forEach((s, i) => {
+                const card = document.createElement('div');
+                card.className = 'neon-card p-3 mb-3';
+                card.innerHTML = `
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-uppercase fw-bold" style="color: var(--neon-cyan)">Subject 0${i+1}</span>
+                        ${subjects.length > 1 ? `<button class="btn btn-sm text-danger p-0" onclick="removeSub(${i})">DELETE</button>` : ''}
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <select class="form-select form-select-sm" onchange="updateSub(${i}, 'credits', this.value)">
+                                <option value="2" ${s.credits==2?'selected':''}>2 CH</option>
+                                <option value="3" ${s.credits==3?'selected':''}>3 CH</option>
+                                <option value="4" ${s.credits==4?'selected':''}>4 CH</option>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <input class="form-control form-control-sm" value="T. Marks: ${s.total}" disabled>
+                        </div>
+                        <div class="col-4">
+                            <input type="number" class="form-control form-control-sm" placeholder="Enter Obtained Marks" value="${s.obtained || ''}" oninput="updateSub(${i}, 'obtained', this.value)">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        } else {
+            document.getElementById('countDisplay').innerText = `FULL TRANSCRIPT`;
+            semesters.forEach((s, i) => {
+                const card = document.createElement('div');
+                card.className = 'neon-card p-3 mb-2';
+                card.innerHTML = `
+                    <div class="row align-items-center">
+                        <div class="col-7 text-uppercase fw-bold">Semester ${s.sem}</div>
+                        <div class="col-5">
+                            <input type="number" step="0.01" class="form-control form-control-sm" placeholder="Enter GPA" value="${s.gpa || ''}" oninput="updateSem(${i}, this.value)">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        updateFinal();
+    }
+
+    function updateFinal() {
+        let score = 0;
+        if (mode === 'GPA') {
+            let pts = 0, crd = 0;
+            subjects.forEach(s => { if(s.obtained > 0) { pts += calculateGPAValue((s.obtained/s.total)*100) * s.credits; crd += s.credits; }});
+            score = crd > 0 ? pts / crd : 0;
+        } else {
+            let pts = 0, crd = 0;
+            semesters.forEach(s => { if(s.gpa > 0) { pts += s.gpa * s.credits; crd += s.credits; }});
+            score = crd > 0 ? pts / crd : 0;
+        }
+        document.getElementById('finalValue').innerText = score.toFixed(2);
+        const color = score >= 3.0 ? '#00f3ff' : score >= 2.0 ? '#bc13fe' : '#ff0055';
+        document.getElementById('finalValue').style.color = color;
+        document.getElementById('finalValue').style.textShadow = `0 0 15px ${color}`;
+        document.getElementById('statusPulse').style.background = color;
+        document.getElementById('statusPulse').style.boxShadow = `0 0 10px ${color}`;
+    }
+
+    window.updateSub = (i, k, v) => {
+        if(k === 'credits') { 
+            subjects[i].credits = parseInt(v); 
+            subjects[i].total = v == 2 ? 100 : v == 3 ? 150 : 200; 
+            render(); 
+        } else { 
+            subjects[i].obtained = parseFloat(v) || 0; 
+            updateFinal(); 
+        }
+    }
+    window.updateSem = (i, v) => { semesters[i].gpa = parseFloat(v) || 0; updateFinal(); }
+    window.addSubject = () => { if(subjects.length < 6) { subjects.push({id: Date.now(), credits: 3, total: 150, obtained: 0}); render(); } }
+    window.removeSub = (i) => { subjects.splice(i, 1); render(); }
+    window.resetApp = () => { if(confirm("REBOOT SYSTEM? ALL DATA WILL BE WIPED.")) location.reload(); }
+
+    render();
+</script>
+<footer class="text-center mt-5 opacity-75">
+    <div style="border-top: 1px solid var(--glass-border); padding-top: 20px; display: inline-block; min-width: 250px;">
+        <p class="mb-1" style="font-size: 0.8rem; letter-spacing: 1px;">SYSTEM CORE SECURED</p>
+        <p class="neon-text" style="color: var(--neon-cyan); font-size: 0.9rem; text-shadow: 0 0 5px var(--neon-cyan);">
+            DEVELOPED BY: <span style="color: var(--neon-purple); text-shadow: 0 0 5px var(--neon-purple);">CYBER ENGINEER</span>
+        </p>
+    </div>
+</footer>
+</body>
+</html>
